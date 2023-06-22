@@ -5,6 +5,7 @@ FROM golang:latest
 RUN apt-get update && \
     apt-get install -y build-essential && \
     apt-get install -y software-properties-common && \
+    apt-get install -y curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev && \
     add-apt-repository -y ppa:ethereum/ethereum && \
     apt-get update && \
     apt-get install -y ethereum
