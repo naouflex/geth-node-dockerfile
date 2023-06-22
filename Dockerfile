@@ -1,5 +1,5 @@
 # Use a base image with the desired Linux distribution and Golang installed
-FROM debian:latest
+FROM golang:1.15.2-buster
 
 RUN apt-get install -y curl python3 
 RUN apt-get update && apt-get -y install golang-go 
