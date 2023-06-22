@@ -1,7 +1,8 @@
 # Use a base image with the desired Linux distribution and Golang installed
-FROM golang:latest
+FROM debian:latest
 
-RUN apt-get install -y curl python3
+RUN apt-get install -y curl python3 
+RUN apt-get update && apt-get -y install golang-go 
 
 
 # Install Geth dependencies
