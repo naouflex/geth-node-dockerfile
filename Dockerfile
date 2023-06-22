@@ -1,18 +1,33 @@
-# Use a base image with the desired Linux distribution and Golang installed
-FROM golang:1.15.2-buster
+# Support setting various labels on the final image
+ARG COMMIT=""
+ARG VERSION=""
+ARG BUILDNUM=""
 
-RUN apt-get install -y curl python3 
-RUN apt-get update && apt-get -y install golang-go 
+# Build Geth in a stock Go builder container
+FROM golang:1.20-alpine as builder
 
+RUN apk add --no-cache gcc musl-dev linux-headers git
 
-# Install Geth dependencies
-RUN apt-get update && \
-    apt-get install -y build-essential && \
-    apt-get install -y software-properties-common && \
-    apt-get install -y curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev && \
-    add-apt-repository -y ppa:ethereum/ethereum && \
-    apt-get update && \
-    apt-get install -y ethereum
+# Get dependencies - will also be cached if we won't change go.mod/go.sum
+COPY go.mod /go-ethereum/
+COPY go.sum /go-ethereum/
+RUN cd /go-ethereum && go mod download
 
-# Set the entrypoint command to launch Geth with the specified options
-ENTRYPOINT ["./build/bin/geth", "--syncmode", "light", "--http", "--http.port", "8545", "--http.addr", "0.0.0.0", "--http.corsdomain", "'*'", "--http.api", "eth,web3"]
+ADD . /go-ethereum
+RUN cd /go-ethereum && go run build/ci.go install -static ./cmd/geth
+
+# Pull Geth into a second stage deploy alpine container
+FROM alpine:latest
+
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /go-ethereum/build/bin/geth /usr/local/bin/
+
+EXPOSE 8545 8546 30303 30303/udp
+ENTRYPOINT ["geth"]
+
+# Add some metadata labels to help programatic image consumption
+ARG COMMIT=""
+ARG VERSION=""
+ARG BUILDNUM=""
+
+LABEL commit="$COMMIT" version="$VERSION" buildnum="$BUILDNUM"
