@@ -4,6 +4,7 @@ FROM golang:latest
 # Install Geth dependencies
 RUN apt-get update && \
     apt-get install -y build-essential && \
+    apt-get install software-properties-common -y && \
     add-apt-repository -y ppa:ethereum/ethereum && \
     apt-get update && \
     apt-get install -y ethereum
