@@ -1,7 +1,10 @@
 # Use a base image with the desired Linux distribution and Golang installed
 FROM golang:latest
-RUN apt-get install -y python3 python3-pip
-RUN pip3 install --upgrade pip
+
+RUN apt-get install -y curl python3
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python3 get-pip.py
+
 
 # Install Geth dependencies
 RUN apt-get update && \
